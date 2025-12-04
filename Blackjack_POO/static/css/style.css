@@ -472,6 +472,62 @@ a {
 .history-égalité { border-color: rgba(148,163,184,0.6); }
 .history-égalité .result { color: var(--muted); }
 
+/* Bloc paramètres audio */
+
+.audio-settings {
+    position: fixed;
+    right: 1.2rem;
+    bottom: 1.2rem;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.settings-toggle {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+}
+
+.settings-panel {
+    background: var(--card-bg);
+    border-radius: 0.8rem;
+    border: 1px solid var(--border);
+    padding: 0.75rem 0.9rem;
+    width: 260px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+    font-size: 0.85rem;
+}
+
+.settings-panel.hidden {
+    display: none;
+}
+
+.settings-panel h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.settings-group {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.settings-row input[type="range"] {
+    flex: 1;
+}
+
+
 /* Responsive : historique en haut sur mobile */
 
 @media (max-width: 768px) {
@@ -492,4 +548,13 @@ a {
     .table { padding: 1rem; }
     .card { width: 60px; height: 90px; font-size: 0.8rem; }
     .top-bar { flex-direction: column; gap: 0.25rem; }
+
+    .audio-settings {
+        right: 0.75rem;
+        bottom: 0.75rem;
+    }
+
+    .settings-panel {
+        width: 220px;
+    }
 }

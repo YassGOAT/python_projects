@@ -31,7 +31,9 @@
                 required
             >
 
-            <button type="submit" class="btn primary">Commencer une partie</button>
+            <button type="submit" class="btn primary" id="start-btn" disabled>
+                Commencer une partie
+            </button>
         </form>
 
         <a href="{{ url_for('reset_balance') }}" class="btn secondary reset-btn">
