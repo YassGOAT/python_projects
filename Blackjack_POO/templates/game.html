@@ -33,7 +33,12 @@
     </aside>
 
     <!-- Zone de jeu principale -->
-    <section class="game">
+    <section class="game
+    {% if finished %} game-finished{% endif %}
+    {% if finished and result == 'Victoire' %} game-win{% endif %}
+    {% if finished and result == 'Défaite' %} game-lose{% endif %}
+    {% if finished and result == 'Égalité' %} game-draw{% endif %}
+    ">
         <div class="top-bar">
             <div>Joueur : <span>{{ player_name }}</span></div>
             <div>Croupier : <span>{{ dealer_name }}</span></div>
