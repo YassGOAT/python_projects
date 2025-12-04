@@ -1,5 +1,20 @@
 import random
 
+# Liste de noms possibles pour le bot (One Piece + Dragon Ball Super)
+BOT_NAMES = [
+    "Zoro",
+    "Nami",
+    "Sanji",
+    "Robin",
+    "Law",
+    "Beerus",
+    "Whis",
+    "Hit",
+    "Jiren",
+    "Kale",
+]
+
+
 class Card:
     def __init__(self, value, suit):
         self.value = value      # "A", "2", ..., "K"
@@ -11,7 +26,7 @@ class Card:
 
 class Deck:
     def __init__(self):
-        values = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
+        values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
         suits = ["Pique", "Trèfle", "Carreau", "Cœur"]
         self.cards = [Card(v, s) for s in suits for v in values]
         random.shuffle(self.cards)
@@ -53,7 +68,7 @@ class Hand:
 
 class BlackjackGame:
     def __init__(self, starting_balance=500):
-        self.starting_balance = starting_balance   # NEW
+        self.starting_balance = starting_balance
         self.balance = starting_balance
         self.bet = 0
         self.deck = Deck()
@@ -62,15 +77,22 @@ class BlackjackGame:
         self.finished = False
         self.message = ""
 
-    def reset_balance(self):   # NEW
+        # Noms
+        self.dealer_names = BOT_NAMES
+        self.player_name = "Joueur"
+        self.dealer_name = random.choice(self.dealer_names)
+
+    def reset_balance(self):
         self.balance = self.starting_balance
         self.bet = 0
         self.message = "Solde réinitialisé."
+        # on garde les noms, pas besoin de les reset ici
 
     def can_bet(self, amount: int) -> bool:
         return 0 < amount <= self.balance
 
     def start_new_game(self, bet: int):
+        """Démarre une manche avec une mise donnée."""
         if not self.can_bet(bet):
             raise ValueError("Mise invalide")
 
@@ -82,9 +104,13 @@ class BlackjackGame:
         self.finished = False
         self.message = ""
 
+        # nouveau nom aléatoire pour le bot à chaque manche
+        self.dealer_name = random.choice(self.dealer_names)
+
         if len(self.deck.cards) < 15:
             self.deck = Deck()
 
+        # distribution initiale
         self.player_hand.add(self.deck.draw())
         self.player_hand.add(self.deck.draw())
         self.dealer_hand.add(self.deck.draw())
@@ -110,6 +136,7 @@ class BlackjackGame:
             self.dealer_hand.add(self.deck.draw())
 
     def resolve_round(self):
+        """Calcule le résultat final et met à jour le solde + message."""
         ps = self.player_hand.score()
         ds = self.dealer_hand.score()
 
@@ -120,16 +147,25 @@ class BlackjackGame:
         if ds > 21:
             gain = self.bet * 2
             self.balance += gain
-            self.message = f"Le croupier dépasse 21 ({ds}). Tu gagnes {gain} € !"
+            self.message = (
+                f"{self.dealer_name} dépasse 21 ({ds}). Tu gagnes {gain} € !"
+            )
             return
 
         if ps > ds:
             gain = self.bet * 2
             self.balance += gain
-            self.message = f"Tu gagnes {gain} € ! (Toi : {ps} / Croupier : {ds})"
+            self.message = (
+                f"Tu bats {self.dealer_name} ! "
+                f"(Toi : {ps} / {self.dealer_name} : {ds}) Tu gagnes {gain} €."
+            )
         elif ps < ds:
-            self.message = f"Le croupier gagne. (Toi : {ps} / Croupier : {ds}) Tu perds {self.bet} €."
+            self.message = (
+                f"{self.dealer_name} gagne. "
+                f"(Toi : {ps} / {self.dealer_name} : {ds}) Tu perds {self.bet} €."
+            )
         else:
             self.balance += self.bet
-            self.message = f"Égalité ({ps}). Ta mise de {self.bet} € t'est rendue."
-
+            self.message = (
+                f"Égalité ({ps}). Ta mise de {self.bet} € t'est rendue."
+            )
