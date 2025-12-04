@@ -82,11 +82,18 @@ class BlackjackGame:
         self.player_name = "Joueur"
         self.dealer_name = random.choice(self.dealer_names)
 
+        # Historique des parties
+        self.history = []
+
+        # NEW : dernier résultat brut ("Victoire", "Défaite", "Égalité" ou "")
+        self.last_result = ""
+
     def reset_balance(self):
         self.balance = self.starting_balance
         self.bet = 0
         self.message = "Solde réinitialisé."
-        # on garde les noms, pas besoin de les reset ici
+        # si tu veux aussi vider l'historique :
+        # self.history = []
 
     def can_bet(self, amount: int) -> bool:
         return 0 < amount <= self.balance
@@ -136,36 +143,55 @@ class BlackjackGame:
             self.dealer_hand.add(self.deck.draw())
 
     def resolve_round(self):
-        """Calcule le résultat final et met à jour le solde + message."""
+        """Calcule le résultat final, met à jour le solde et log dans l'historique."""
         ps = self.player_hand.score()
         ds = self.dealer_hand.score()
+        result = ""
 
         if ps > 21:
             self.message = f"Tu as dépassé 21 ({ps}). Tu perds {self.bet} €."
-            return
-
-        if ds > 21:
+            result = "Défaite"
+        elif ds > 21:
             gain = self.bet * 2
             self.balance += gain
             self.message = (
                 f"{self.dealer_name} dépasse 21 ({ds}). Tu gagnes {gain} € !"
             )
-            return
-
-        if ps > ds:
+            result = "Victoire"
+        elif ps > ds:
             gain = self.bet * 2
             self.balance += gain
             self.message = (
                 f"Tu bats {self.dealer_name} ! "
                 f"(Toi : {ps} / {self.dealer_name} : {ds}) Tu gagnes {gain} €."
             )
+            result = "Victoire"
         elif ps < ds:
             self.message = (
                 f"{self.dealer_name} gagne. "
                 f"(Toi : {ps} / {self.dealer_name} : {ds}) Tu perds {self.bet} €."
             )
+            result = "Défaite"
         else:
             self.balance += self.bet
             self.message = (
                 f"Égalité ({ps}). Ta mise de {self.bet} € t'est rendue."
             )
+            result = "Égalité"
+
+        self.last_result = result
+
+        # --- Ajout dans l'historique ---
+        entry = {
+            "result": result,
+            "player_score": ps,
+            "dealer_score": ds,
+            "bet": self.bet,
+            "balance_after": self.balance,
+            "dealer_name": self.dealer_name,
+        }
+        # on ajoute en tête de liste
+        self.history.insert(0, entry)
+        # on limite à 10 entrées
+        if len(self.history) > 10:
+            self.history.pop()

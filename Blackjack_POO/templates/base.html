@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body data-result="{{ result|default('') }}">
 
 <div class="page">
     <header class="header">
@@ -27,6 +27,13 @@
         <p>Projet perso – Python / Flask / Blackjack</p>
     </footer>
 </div>
+
+<!-- Audio global -->
+<audio id="sfx-click" src="{{ url_for('static', filename='audio/click.mp3') }}"></audio>
+<audio id="sfx-card" src="{{ url_for('static', filename='audio/card.mp3') }}"></audio>
+<audio id="sfx-win"  src="{{ url_for('static', filename='audio/win.mp3') }}"></audio>
+<audio id="sfx-lose" src="{{ url_for('static', filename='audio/lose.mp3') }}"></audio>
+<audio id="music-bg" src="{{ url_for('static', filename='audio/bg.mp3') }}" loop></audio>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

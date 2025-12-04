@@ -55,6 +55,8 @@ def game_page():
         bet=game.bet,
         player_name=game.player_name,
         dealer_name=game.dealer_name,
+        history=game.history,
+        last_result=game.last_result,
     )
 
 
