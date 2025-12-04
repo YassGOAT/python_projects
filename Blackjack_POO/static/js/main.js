@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bg:    0.2,
     };
 
-    // --- CHARGER/Sauver les paramètres audio ---
+    // --- SETTINGS LOCALSTORAGE ---
     const SETTINGS_KEY = "bj_audio_settings";
 
     const loadSettings = () => {
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         } catch {
-            // on ignore les erreurs de stockage
+            // ignore
         }
     };
 
@@ -68,18 +68,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     applyAudioSettings();
 
-    // Petit helper pour jouer un son
     const playSafe = (audioEl) => {
         if (!audioEl || audioSettings.masterMuted) return;
         try {
             audioEl.currentTime = 0;
-            audioEl.play();
+            audioEl.play().catch(() => {});
         } catch {
-            // Autoplay bloqué, on ignore
+            // autoplay bloqué → pas grave
         }
     };
 
-    // --- MUSIQUE DE FOND AU PREMIER CLIC ---
+    // --- MUSIQUE DE FOND : on ESSAIE dès le chargement ---
+    if (bgMusic && !audioSettings.masterMuted) {
+        playSafe(bgMusic);
+    }
+
+    // Et on retente au premier clic utilisateur si besoin
     let bgStarted = false;
     const startBgMusic = () => {
         if (!bgStarted && bgMusic && !audioSettings.masterMuted) {
@@ -88,23 +92,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- SONS DE RÉSULTAT ---
-    const body      = document.body;
-    const resultRaw = (body.dataset.result || "").toLowerCase();
+    // --- SONS DE RÉSULTAT (win/lose) ---
+    const body = document.body;
+    const resultRaw = (body.dataset.result || "").toLowerCase().trim();
 
-    if (resultRaw === "victoire") {
-        playSafe(winSfx);
-    } else if (resultRaw === "défaite" || resultRaw === "defaite") {
-        playSafe(loseSfx);
+    // petit délai pour laisser le DOM se poser
+    if (resultRaw && !audioSettings.masterMuted) {
+        setTimeout(() => {
+            if (resultRaw === "victoire") {
+                playSafe(winSfx);
+            } else if (resultRaw === "défaite" || resultRaw === "defaite") {
+                playSafe(loseSfx);
+            }
+        }, 150);
     }
 
-    // --- SONS SUR LES BOUTONS ---
+    // --- SONS SUR LES BOUTONS (click/card) ---
     const buttons = document.querySelectorAll(".btn");
     buttons.forEach((btn) => {
         btn.addEventListener("click", () => {
             startBgMusic();
-
-            const soundType = btn.dataset.sound || "click";
+            const soundType = (btn.dataset.sound || "click").toLowerCase();
             if (soundType === "card") {
                 playSafe(cardSfx);
             } else {
@@ -113,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- ACTIVATION DU BOUTON "Commencer" SELON LA MISE ---
+    // --- ACTIVATION DU BOUTON "Commencer une partie" SELON LA MISE ---
     const betInput  = document.getElementById("bet");
     const startBtn  = document.getElementById("start-btn");
 
@@ -133,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateStartBtn();
     }
 
-    // --- PARAMÈTRES AUDIO UI ---
+    // --- PARAMÈTRES AUDIO (mute + sliders) ---
     const settingsToggle = document.querySelector(".settings-toggle");
     const settingsPanel  = document.querySelector(".settings-panel");
     const muteCheckbox   = document.getElementById("audio-mute");
@@ -145,9 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Initialiser UI selon les settings
     if (muteCheckbox) {
         muteCheckbox.checked = !!audioSettings.masterMuted;
+        muteCheckbox.addEventListener("change", () => {
+            audioSettings.masterMuted = muteCheckbox.checked;
+            applyAudioSettings();
+            saveSettings(audioSettings);
+        });
     }
 
     sliders.forEach((slider) => {
@@ -165,12 +177,4 @@ document.addEventListener("DOMContentLoaded", () => {
             saveSettings(audioSettings);
         });
     });
-
-    if (muteCheckbox) {
-        muteCheckbox.addEventListener("change", () => {
-            audioSettings.masterMuted = muteCheckbox.checked;
-            applyAudioSettings();
-            saveSettings(audioSettings);
-        });
-    }
 });

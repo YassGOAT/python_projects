@@ -1,11 +1,14 @@
 from flask import Flask, render_template, redirect, url_for, request
-from blackjack import BlackjackGame
+from blackjack import BlackjackGame, BlackjackGamePVP
 
 app = Flask(__name__)
 app.secret_key = "change_this_secret_key"
 
-# Une instance globale du jeu
+# Jeu contre le croupier
 game = BlackjackGame(starting_balance=500)
+
+# Jeu 2 joueurs
+game_pvp = BlackjackGamePVP()
 
 
 @app.route("/")
@@ -17,8 +20,12 @@ def index():
         error=error,
         player_name=game.player_name,
         dealer_name=game.dealer_name,
+        p1_name=game_pvp.player1_name,
+        p2_name=game_pvp.player2_name,
     )
 
+
+# ---------- MODE VS CROUPIER ----------
 
 @app.route("/start", methods=["POST"])
 def start():
@@ -56,7 +63,7 @@ def game_page():
         player_name=game.player_name,
         dealer_name=game.dealer_name,
         history=game.history,
-        last_result=game.last_result,
+        result=game.last_result,
     )
 
 
@@ -64,7 +71,7 @@ def game_page():
 def hit():
     game.player_hit()
     if game.finished:
-        game.dealer_turn()   # ne fait rien si le joueur est bust
+        game.dealer_turn()
         game.resolve_round()
     return redirect(url_for("game_page"))
 
@@ -81,6 +88,47 @@ def stand():
 def reset_balance():
     game.reset_balance()
     return redirect(url_for("index"))
+
+
+# ---------- MODE 2 JOUEURS ----------
+
+@app.route("/start-pvp", methods=["POST"])
+def start_pvp():
+    name1 = request.form.get("player1_name", "").strip() or "Joueur 1"
+    name2 = request.form.get("player2_name", "").strip() or "Joueur 2"
+
+    game_pvp.start_new_game(name1, name2)
+    return redirect(url_for("game_pvp_page"))
+
+
+@app.route("/game-pvp")
+def game_pvp_page():
+    return render_template(
+        "game_pvp.html",
+        player1_hand=game_pvp.player1_hand,
+        player2_hand=game_pvp.player2_hand,
+        player1_score=game_pvp.player1_hand.score(),
+        player2_score=game_pvp.player2_hand.score(),
+        player1_name=game_pvp.player1_name,
+        player2_name=game_pvp.player2_name,
+        current_turn=game_pvp.current_turn,
+        finished=game_pvp.finished,
+        message=game_pvp.message,
+        history=game_pvp.history,
+        result=game_pvp.last_result,
+    )
+
+
+@app.route("/hit-pvp")
+def hit_pvp():
+    game_pvp.hit()
+    return redirect(url_for("game_pvp_page"))
+
+
+@app.route("/stand-pvp")
+def stand_pvp():
+    game_pvp.stand()
+    return redirect(url_for("game_pvp_page"))
 
 
 if __name__ == "__main__":

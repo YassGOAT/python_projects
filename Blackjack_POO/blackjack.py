@@ -195,3 +195,143 @@ class BlackjackGame:
         # on limite à 10 entrées
         if len(self.history) > 10:
             self.history.pop()
+
+class BlackjackGamePVP:
+    """Mode 2 joueurs sur le même écran (sans croupier)."""
+
+    def __init__(self):
+        self.deck = Deck()
+        self.player1_hand = Hand()
+        self.player2_hand = Hand()
+
+        self.player1_name = "Joueur 1"
+        self.player2_name = "Joueur 2"
+
+        self.current_turn = "p1"  # "p1" ou "p2"
+        self.finished = False
+        self.message = ""
+        self.last_result = ""  # "Victoire", "Défaite", "Égalité" (du point de vue du Joueur 1)
+
+        # Historique des parties
+        self.history = []
+
+    def _reset_hands(self):
+        self.player1_hand = Hand()
+        self.player2_hand = Hand()
+
+    def start_new_game(self, name1: str, name2: str):
+        """Démarre une nouvelle manche PVP."""
+        if name1:
+            self.player1_name = name1
+        if name2:
+            self.player2_name = name2
+
+        # On recrée le deck si presque vide
+        if len(self.deck.cards) < 15:
+            self.deck = Deck()
+
+        self._reset_hands()
+        self.finished = False
+        self.message = ""
+        self.last_result = ""
+        self.current_turn = "p1"
+
+        # 2 cartes pour chaque joueur
+        self.player1_hand.add(self.deck.draw())
+        self.player1_hand.add(self.deck.draw())
+        self.player2_hand.add(self.deck.draw())
+        self.player2_hand.add(self.deck.draw())
+
+    def hit(self):
+        """Le joueur courant tire une carte."""
+        if self.finished:
+            return
+
+        hand = self.player1_hand if self.current_turn == "p1" else self.player2_hand
+        hand.add(self.deck.draw())
+
+        if hand.is_bust():
+            # s'il bust, on passe au suivant ou on termine
+            if self.current_turn == "p1":
+                self.current_turn = "p2"
+            else:
+                self.finished = True
+                self._resolve_round()
+
+    def stand(self):
+        """Le joueur courant reste."""
+        if self.finished:
+            return
+
+        if self.current_turn == "p1":
+            self.current_turn = "p2"
+        else:
+            self.finished = True
+            self._resolve_round()
+
+    def _resolve_round(self):
+        """Compare les deux joueurs et enregistre le résultat."""
+        s1 = self.player1_hand.score()
+        s2 = self.player2_hand.score()
+
+        result = ""
+        winner_name = None
+
+        p1_bust = s1 > 21
+        p2_bust = s2 > 21
+
+        if p1_bust and p2_bust:
+            result = "Égalité"
+            self.message = (
+                f"Les deux joueurs dépassent 21 ({s1} / {s2}). Personne ne gagne."
+            )
+        elif p1_bust and not p2_bust:
+            result = "Défaite"  # du point de vue du Joueur 1
+            winner_name = self.player2_name
+            self.message = (
+                f"{self.player1_name} dépasse 21 ({s1}). "
+                f"{self.player2_name} gagne avec {s2}."
+            )
+        elif p2_bust and not p1_bust:
+            result = "Victoire"
+            winner_name = self.player1_name
+            self.message = (
+                f"{self.player2_name} dépasse 21 ({s2}). "
+                f"{self.player1_name} gagne avec {s1}."
+            )
+        else:
+            # aucun ne bust, on compare les scores
+            if s1 > s2:
+                result = "Victoire"
+                winner_name = self.player1_name
+                self.message = (
+                    f"{self.player1_name} gagne ! "
+                    f"({self.player1_name} : {s1} / {self.player2_name} : {s2})"
+                )
+            elif s2 > s1:
+                result = "Défaite"
+                winner_name = self.player2_name
+                self.message = (
+                    f"{self.player2_name} gagne ! "
+                    f"({self.player1_name} : {s1} / {self.player2_name} : {s2})"
+                )
+            else:
+                result = "Égalité"
+                self.message = (
+                    f"Égalité parfaite ({s1} / {s2}). "
+                    f"Aucun des deux ne l'emporte."
+                )
+
+        self.last_result = result
+
+        entry = {
+            "result": result,
+            "p1_score": s1,
+            "p2_score": s2,
+            "p1_name": self.player1_name,
+            "p2_name": self.player2_name,
+            "winner_name": winner_name,
+        }
+        self.history.insert(0, entry)
+        if len(self.history) > 10:
+            self.history.pop()
