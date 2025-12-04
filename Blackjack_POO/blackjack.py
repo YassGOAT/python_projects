@@ -18,8 +18,7 @@ class Deck:
 
     def draw(self):
         if not self.cards:
-            # on recrée un paquet si vide
-            self.__init__()
+            self.__init__()  # recrée un paquet si vide
         return self.cards.pop()
 
 
@@ -34,7 +33,7 @@ class Hand:
         total = 0
         aces = 0
         for c in self.cards:
-            if c.value in ["J","Q","K"]:
+            if c.value in ["J", "Q", "K"]:
                 total += 10
             elif c.value == "A":
                 total += 11
@@ -53,21 +52,31 @@ class Hand:
 
 
 class BlackjackGame:
-    def __init__(self):
-        self.balance = 500
+    def __init__(self, starting_balance=500):
+        self.balance = starting_balance
+        self.bet = 0
         self.deck = Deck()
         self.player_hand = Hand()
         self.dealer_hand = Hand()
         self.finished = False
         self.message = ""
 
-    def start_new_game(self):
+    def can_bet(self, amount: int) -> bool:
+        return 0 < amount <= self.balance
+
+    def start_new_game(self, bet: int):
+        """Démarre une manche avec une mise donnée."""
+        if not self.can_bet(bet):
+            raise ValueError("Mise invalide")
+
+        self.bet = bet
+        self.balance -= bet  # on retire la mise du solde
+
         self.player_hand = Hand()
         self.dealer_hand = Hand()
         self.finished = False
         self.message = ""
 
-        # on recrée le deck si presque vide
         if len(self.deck.cards) < 15:
             self.deck = Deck()
 
@@ -83,7 +92,7 @@ class BlackjackGame:
         self.player_hand.add(self.deck.draw())
         if self.player_hand.is_bust():
             self.finished = True
-            self.message = "Tu as dépassé 21. Tu as perdu."
+            # le reste (argent + message final) sera géré dans resolve_round
 
     def player_stand(self):
         if self.finished:
@@ -91,7 +100,7 @@ class BlackjackGame:
         self.finished = True
 
     def dealer_turn(self):
-        # le croupier ne joue que si le joueur n'a pas déjà bust
+        # le croupier ne joue que si le joueur n'a pas bust
         if self.player_hand.is_bust():
             return
 
@@ -99,16 +108,27 @@ class BlackjackGame:
             self.dealer_hand.add(self.deck.draw())
 
     def resolve_round(self):
+        """Calcule le résultat final et met à jour le solde."""
         ps = self.player_hand.score()
         ds = self.dealer_hand.score()
 
         if ps > 21:
-            self.message = "Tu as dépassé 21. Tu as perdu."
-        elif ds > 21:
-            self.message = "Le croupier dépasse 21. Tu gagnes !"
-        elif ps > ds:
-            self.message = "Tu gagnes !"
+            self.message = f"Tu as dépassé 21 ({ps}). Tu perds {self.bet} €."
+            return
+
+        if ds > 21:
+            gain = self.bet * 2
+            self.balance += gain
+            self.message = f"Le croupier dépasse 21 ({ds}). Tu gagnes {gain} € !"
+            return
+
+        if ps > ds:
+            gain = self.bet * 2
+            self.balance += gain
+            self.message = f"Tu gagnes {gain} € ! (Toi : {ps} / Croupier : {ds})"
         elif ps < ds:
-            self.message = "Le croupier gagne."
+            self.message = f"Le croupier gagne. (Toi : {ps} / Croupier : {ds}) Tu perds {self.bet} €."
         else:
-            self.message = "Égalité."
+            # égalité → on rend la mise
+            self.balance += self.bet
+            self.message = f"Égalité ({ps}). Ta mise de {self.bet} € t'est rendue."

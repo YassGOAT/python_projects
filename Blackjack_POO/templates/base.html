@@ -3,17 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <title>Blackjack</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<header>
-    <h1>Blackjack</h1>
-</header>
+<div class="page">
+    <header class="header">
+        <div class="header-inner">
+            <h1 class="logo">Blackjack Casino</h1>
+            <nav class="nav">
+                <a href="{{ url_for('index') }}">Accueil</a>
+                <a href="{{ url_for('game_page') }}">Partie</a>
+            </nav>
+        </div>
+    </header>
 
-<main>
-    {% block content %}{% endblock %}
-</main>
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>Projet perso – Python / Flask / Blackjack</p>
+    </footer>
+</div>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
