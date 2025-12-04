@@ -53,6 +53,7 @@ class Hand:
 
 class BlackjackGame:
     def __init__(self, starting_balance=500):
+        self.starting_balance = starting_balance   # NEW
         self.balance = starting_balance
         self.bet = 0
         self.deck = Deck()
@@ -61,16 +62,20 @@ class BlackjackGame:
         self.finished = False
         self.message = ""
 
+    def reset_balance(self):   # NEW
+        self.balance = self.starting_balance
+        self.bet = 0
+        self.message = "Solde réinitialisé."
+
     def can_bet(self, amount: int) -> bool:
         return 0 < amount <= self.balance
 
     def start_new_game(self, bet: int):
-        """Démarre une manche avec une mise donnée."""
         if not self.can_bet(bet):
             raise ValueError("Mise invalide")
 
         self.bet = bet
-        self.balance -= bet  # on retire la mise du solde
+        self.balance -= bet
 
         self.player_hand = Hand()
         self.dealer_hand = Hand()
@@ -80,7 +85,6 @@ class BlackjackGame:
         if len(self.deck.cards) < 15:
             self.deck = Deck()
 
-        # distribution initiale
         self.player_hand.add(self.deck.draw())
         self.player_hand.add(self.deck.draw())
         self.dealer_hand.add(self.deck.draw())
@@ -92,7 +96,6 @@ class BlackjackGame:
         self.player_hand.add(self.deck.draw())
         if self.player_hand.is_bust():
             self.finished = True
-            # le reste (argent + message final) sera géré dans resolve_round
 
     def player_stand(self):
         if self.finished:
@@ -100,7 +103,6 @@ class BlackjackGame:
         self.finished = True
 
     def dealer_turn(self):
-        # le croupier ne joue que si le joueur n'a pas bust
         if self.player_hand.is_bust():
             return
 
@@ -108,7 +110,6 @@ class BlackjackGame:
             self.dealer_hand.add(self.deck.draw())
 
     def resolve_round(self):
-        """Calcule le résultat final et met à jour le solde."""
         ps = self.player_hand.score()
         ds = self.dealer_hand.score()
 
@@ -129,6 +130,6 @@ class BlackjackGame:
         elif ps < ds:
             self.message = f"Le croupier gagne. (Toi : {ps} / Croupier : {ds}) Tu perds {self.bet} €."
         else:
-            # égalité → on rend la mise
             self.balance += self.bet
             self.message = f"Égalité ({ps}). Ta mise de {self.bet} € t'est rendue."
+

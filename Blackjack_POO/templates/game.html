@@ -9,14 +9,21 @@
     </div>
 
     <div class="table">
+        <!-- Main du croupier -->
         <div class="hand dealer">
             <h3>Croupier</h3>
             <div class="cards">
                 {% if not finished %}
                     {% if dealer_hand.cards %}
-                        <div class="card">
+                        <div class="card {% if dealer_hand.cards[0].suit in ['Cœur','Carreau'] %}red{% endif %}">
                             <span class="value">{{ dealer_hand.cards[0].value }}</span>
-                            <span class="suit">{{ dealer_hand.cards[0].suit }}</span>
+                            <span class="suit">
+                                {% if dealer_hand.cards[0].suit == 'Pique' %}♠
+                                {% elif dealer_hand.cards[0].suit == 'Trèfle' %}♣
+                                {% elif dealer_hand.cards[0].suit == 'Carreau' %}♦
+                                {% elif dealer_hand.cards[0].suit == 'Cœur' %}♥
+                                {% endif %}
+                            </span>
                         </div>
                         <div class="card back">
                             <span class="value">?</span>
@@ -26,9 +33,15 @@
                     {% endif %}
                 {% else %}
                     {% for card in dealer_hand.cards %}
-                        <div class="card">
+                        <div class="card {% if card.suit in ['Cœur','Carreau'] %}red{% endif %}">
                             <span class="value">{{ card.value }}</span>
-                            <span class="suit">{{ card.suit }}</span>
+                            <span class="suit">
+                                {% if card.suit == 'Pique' %}♠
+                                {% elif card.suit == 'Trèfle' %}♣
+                                {% elif card.suit == 'Carreau' %}♦
+                                {% elif card.suit == 'Cœur' %}♥
+                                {% endif %}
+                            </span>
                         </div>
                     {% endfor %}
                 {% endif %}
@@ -38,13 +51,20 @@
             {% endif %}
         </div>
 
+        <!-- Main du joueur -->
         <div class="hand player">
             <h3>Joueur</h3>
             <div class="cards">
                 {% for card in player_hand.cards %}
-                    <div class="card">
+                    <div class="card {% if card.suit in ['Cœur','Carreau'] %}red{% endif %}">
                         <span class="value">{{ card.value }}</span>
-                        <span class="suit">{{ card.suit }}</span>
+                        <span class="suit">
+                            {% if card.suit == 'Pique' %}♠
+                            {% elif card.suit == 'Trèfle' %}♣
+                            {% elif card.suit == 'Carreau' %}♦
+                            {% elif card.suit == 'Cœur' %}♥
+                            {% endif %}
+                        </span>
                     </div>
                 {% endfor %}
             </div>

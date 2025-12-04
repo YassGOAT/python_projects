@@ -57,3 +57,8 @@ def stand():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/reset-balance")
+def reset_balance():
+    game.reset_balance()
+    return redirect(url_for("index"))
