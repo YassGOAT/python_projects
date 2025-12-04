@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Solde : {{ game_balance if game_balance is defined else '' }}</h2>
+
+<div class="hands">
+    <div class="hand">
+        <h3>Joueur</h3>
+        <p>
+            {% for card in player_hand.cards %}
+                <span class="card">{{ card.value }} de {{ card.suit }}</span>
+            {% endfor %}
+        </p>
+        <p>Score : {{ player_score }}</p>
+    </div>
+
+    <div class="hand">
+        <h3>Croupier</h3>
+        <p>
+            {% if not finished %}
+                {# montrer seulement la première carte + carte cachée #}
+                {% if dealer_hand.cards %}
+                    <span class="card">{{ dealer_hand.cards[0].value }} de {{ dealer_hand.cards[0].suit }}</span>
+                    <span class="card">[Carte cachée]</span>
+                {% else %}
+                    Aucune carte
+                {% endif %}
+            {% else %}
+                {% for card in dealer_hand.cards %}
+                    <span class="card">{{ card.value }} de {{ card.suit }}</span>
+                {% endfor %}
+            {% endif %}
+        </p>
+        {% if finished %}
+            <p>Score : {{ dealer_score }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if message %}
+    <p class="message">{{ message }}</p>
+{% endif %}
+
+{% if not finished %}
+    <div class="actions">
+        <a class="btn" href="{{ url_for('hit') }}">Tirer</a>
+        <a class="btn" href="{{ url_for('stand') }}">Rester</a>
+    </div>
+{% else %}
+    <div class="actions">
+        <a class="btn" href="{{ url_for('start') }}">Rejouer</a>
+        <a class="btn" href="{{ url_for('index') }}">Retour menu</a>
+    </div>
+{% endif %}
+
+{% endblock %}

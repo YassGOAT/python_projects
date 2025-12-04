@@ -1,0 +1,33 @@
+body {
+    background: #0c0f18;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.btn {
+    background: #1e90ff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    color: white;
+    display: inline-block;
+    margin: 10px;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: #0066cc;
+}
+
+.hands {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 40px;
+}
+
+.hand {
+    background: #111;
+    padding: 20px;
+    border-radius: 10px;
+    width: 40%;
+}
